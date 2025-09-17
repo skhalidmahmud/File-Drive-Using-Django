@@ -13,6 +13,11 @@ from .forms import UserProfileForm, FolderForm, FileForm
 import os
 from datetime import datetime
 
+def dp(user):
+    User = UserProfile.objects.get(user=user)
+    profileIMG = User.photo
+    return profileIMG
+
 def signup_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -53,6 +58,7 @@ def logout_view(request):
 
 @login_required
 def home_view(request):
+    user = UserProfile.objects.get(user=request.user)
     # Get user's root folder
     try:
         root_folders = Folder.objects.filter(owner=request.user, parent=None)
@@ -77,7 +83,7 @@ def home_view(request):
         root_folder = Folder.objects.create(name='Home', owner=request.user, parent=None)
     
     # Get recent activities
-    recent_activities = RecentActivity.objects.filter(user=request.user)[:10]
+    recent_activities = RecentActivity.objects.filter(user=request.user)[:6]
     
     # Get storage usage
     storage_settings = StorageSettings.objects.first()
@@ -131,11 +137,13 @@ def home_view(request):
         'used_space': used_space,
         'total_space': total_space,
         'used_percentage': used_percentage,
+        'img': user.photo,
     }
     return render(request, 'drive/home.html', context)
 
 @login_required
 def folder_view(request, folder_id):
+    user = UserProfile.objects.get(user=request.user)
     folder = get_object_or_404(Folder, id=folder_id, owner=request.user)
     
     # Check if folder is public or user is owner
@@ -158,11 +166,13 @@ def folder_view(request, folder_id):
         'folder': folder,
         'subfolders': subfolders,
         'files': files,
+        'img': user.photo,
     }
     return render(request, 'drive/folder.html', context)
 
 @login_required
 def create_folder_view(request, parent_id=None):
+    user = UserProfile.objects.get(user=request.user)
     parent_folder = None
     if parent_id:
         parent_folder = get_object_or_404(Folder, id=parent_id, owner=request.user)
@@ -193,11 +203,13 @@ def create_folder_view(request, parent_id=None):
     context = {
         'form': form,
         'parent_folder': parent_folder,
+        'img': user.photo,
     }
     return render(request, 'drive/create_folder.html', context)
 
 @login_required
 def upload_file_view(request, folder_id=None):
+    user = UserProfile.objects.get(user=request.user)
     folder = None
     if folder_id:
         folder = get_object_or_404(Folder, id=folder_id, owner=request.user)
@@ -246,11 +258,13 @@ def upload_file_view(request, folder_id=None):
     context = {
         'form': form,
         'folder': folder,
+        'img': user.photo,
     }
     return render(request, 'drive/upload_file.html', context)
 
 @login_required
 def file_view(request, file_id):
+    user = UserProfile.objects.get(user=request.user)
     file_obj = get_object_or_404(File, id=file_id)
     
     # Check if file is public or user is owner
@@ -271,6 +285,7 @@ def file_view(request, file_id):
     context = {
         'file': file_obj,
         'extension': extension,
+        'img': user.photo,
     }
     return render(request, 'drive/file.html', context)
 
@@ -333,8 +348,10 @@ def delete_item_view(request, item_type, item_id):
 @login_required
 def trash_view(request):
     trash_items = Trash.objects.filter(owner=request.user)
+    user = UserProfile.objects.get(user=request.user)
     context = {
         'trash_items': trash_items,
+        'img': user.photo,
     }
     return render(request, 'drive/trash.html', context)
 
@@ -417,6 +434,7 @@ def toggle_public_view(request, item_type, item_id):
 
 @login_required
 def profile_view(request):
+    user = UserProfile.objects.get(user=request.user)
     try:
         profile = request.user.userprofile
     except UserProfile.DoesNotExist:
@@ -433,11 +451,13 @@ def profile_view(request):
     
     context = {
         'form': form,
+        'img': user.photo,
     }
     return render(request, 'drive/profile.html', context)
 
 @login_required
 def search_view(request):
+    user = UserProfile.objects.get(user=request.user)
     query = request.GET.get('q', '')
     
     folders = []
@@ -458,5 +478,6 @@ def search_view(request):
         'query': query,
         'folders': folders,
         'files': files,
+        'img': user.photo,
     }
     return render(request, 'drive/search.html', context)

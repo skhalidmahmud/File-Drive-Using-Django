@@ -86,7 +86,12 @@
                     <ul class="navbar-nav">
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> {{ user.username }}
+                                {% if img %}
+                                    <img src="{{ img.url }}" alt="Profile Picture" class="rounded-circle" width="30" height="30">
+                                {% else %}
+                                <i class="bi bi-person-circle"></i>
+                                {% endif %}
+                                {{ user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
