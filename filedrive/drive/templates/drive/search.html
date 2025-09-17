@@ -77,25 +77,29 @@
                                             {% for file in files %}
                                                 <tr>
                                                     <td>
-                                                        {% if file.file_type in 'jpg,jpeg,png,gif,bmp' %}
-                                                            <i class="bi bi-file-earmark-image text-primary"></i>
-                                                        {% elif file.file_type in 'pdf' %}
-                                                            <i class="bi bi-file-earmark-pdf text-danger"></i>
-                                                        {% elif file.file_type in 'doc,docx' %}
-                                                            <i class="bi bi-file-earmark-word text-primary"></i>
-                                                        {% elif file.file_type in 'xls,xlsx' %}
-                                                            <i class="bi bi-file-earmark-excel text-success"></i>
-                                                        {% elif file.file_type in 'ppt,pptx' %}
-                                                            <i class="bi bi-file-earmark-ppt text-warning"></i>
-                                                        {% elif file.file_type in 'mp4,avi,mov,wmv,flv' %}
-                                                            <i class="bi bi-file-earmark-play text-danger"></i>
-                                                        {% elif file.file_type in 'mp3,wav,flac' %}
-                                                            <i class="bi bi-file-earmark-music text-info"></i>
-                                                        {% elif file.file_type in 'zip,rar,tar,gz' %}
-                                                            <i class="bi bi-file-earmark-zip text-secondary"></i>
-                                                        {% else %}
-                                                            <i class="bi bi-file-earmark text-secondary"></i>
-                                                        {% endif %}
+                                                        {% with file.get_file_category as category %}
+                                                            {% if category == 'image' %}
+                                                                <i class="bi bi-file-earmark-image text-primary"></i>
+                                                            {% elif category == 'video' %}
+                                                                <i class="bi bi-file-earmark-play text-danger"></i>
+                                                            {% elif category == 'audio' %}
+                                                                <i class="bi bi-file-earmark-music text-info"></i>
+                                                            {% elif category == 'pdf' %}
+                                                                <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                                            {% elif category == 'word' %}
+                                                                <i class="bi bi-file-earmark-word text-primary"></i>
+                                                            {% elif category == 'excel' %}
+                                                                <i class="bi bi-file-earmark-excel text-success"></i>
+                                                            {% elif category == 'powerpoint' %}
+                                                                <i class="bi bi-file-earmark-ppt text-warning"></i>
+                                                            {% elif category == 'text' %}
+                                                                <i class="bi bi-file-earmark-text text-secondary"></i>
+                                                            {% elif category == 'archive' %}
+                                                                <i class="bi bi-file-earmark-zip text-secondary"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-file-earmark text-secondary"></i>
+                                                            {% endif %}
+                                                        {% endwith %}
                                                         {{ file.name }}
                                                     </td>
                                                     <td>{{ file.folder.get_path|default:"Root" }}</td>

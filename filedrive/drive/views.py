@@ -20,8 +20,9 @@ def signup_view(request):
             user = form.save()
             # Create user profile
             UserProfile.objects.create(user=user)
-            # Create root folder for the user
-            Folder.objects.create(name='Home', owner=user, parent=None)
+            # Create root folder for the user only if it doesn't exist
+            if not Folder.objects.filter(owner=user, parent=None).exists():
+                Folder.objects.create(name='Home', owner=user, parent=None)
             messages.success(request, "Account created successfully!")
             return redirect('login')
     else:
@@ -53,7 +54,27 @@ def logout_view(request):
 @login_required
 def home_view(request):
     # Get user's root folder
-    root_folder = Folder.objects.get(owner=request.user, parent=None)
+    try:
+        root_folders = Folder.objects.filter(owner=request.user, parent=None)
+        if root_folders.exists():
+            if root_folders.count() > 1:
+                # If multiple root folders exist, use the first one and log a warning
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"User {request.user.username} has {root_folders.count()} root folders. Using the first one.")
+                root_folder = root_folders.first()
+            else:
+                root_folder = root_folders.first()
+        else:
+            # If no root folder exists, create one
+            root_folder = Folder.objects.create(name='Home', owner=request.user, parent=None)
+    except Exception as e:
+        # Handle any other exceptions
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error getting root folder for user {request.user.username}: {str(e)}")
+        # Create a new root folder as fallback
+        root_folder = Folder.objects.create(name='Home', owner=request.user, parent=None)
     
     # Get recent activities
     recent_activities = RecentActivity.objects.filter(user=request.user)[:10]
@@ -67,8 +88,45 @@ def home_view(request):
     total_space = storage_settings.space_per_user
     used_percentage = (used_space / total_space) * 100 if total_space > 0 else 0
     
+    # Debug: Print information to console
+    print(f"Root folder: {root_folder}")
+    print(f"Subfolders count: {root_folder.children.count()}")
+    print(f"Files count: {root_folder.files.count()}")
+    
+    # If there are files/folders not showing in the root folder, 
+    # let's also check for files/folders that might be orphaned
+    all_user_folders = Folder.objects.filter(owner=request.user)
+    all_user_files = File.objects.filter(owner=request.user)
+    
+    print(f"All user folders: {all_user_folders.count()}")
+    print(f"All user files: {all_user_files.count()}")
+    
+    # Check for orphaned files/folders (not in any folder)
+    orphaned_folders = all_user_folders.filter(parent=None).exclude(id=root_folder.id)
+    orphaned_files = all_user_files.filter(folder=None)
+    
+    print(f"Orphaned folders: {orphaned_folders.count()}")
+    print(f"Orphaned files: {orphaned_files.count()}")
+    
+    # If there are orphaned items, move them to the root folder
+    for folder in orphaned_folders:
+        print(f"Moving orphaned folder '{folder.name}' to root")
+        folder.parent = root_folder
+        folder.save()
+    
+    for file in orphaned_files:
+        print(f"Moving orphaned file '{file.name}' to root")
+        file.folder = root_folder
+        file.save()
+    
+    # Now get the updated counts
+    subfolders = root_folder.children.all()
+    files = root_folder.files.all()
+    
     context = {
         'root_folder': root_folder,
+        'subfolders': subfolders,
+        'files': files,
         'recent_activities': recent_activities,
         'used_space': used_space,
         'total_space': total_space,
@@ -150,6 +208,11 @@ def upload_file_view(request, folder_id=None):
             file_obj = form.save(commit=False)
             file_obj.owner = request.user
             file_obj.folder = folder
+            
+            # Auto-populate name from filename if not provided
+            if not file_obj.name and file_obj.file:
+                file_obj.name = file_obj.file.name.split('/')[-1]
+            
             file_obj.save()
             
             # Check storage space

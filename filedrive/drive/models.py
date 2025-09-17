@@ -66,11 +66,57 @@ class File(models.Model):
     def get_extension(self):
         return os.path.splitext(self.name)[1][1:].lower()
     
+    def get_file_category(self):
+        """Return the category of the file based on its extension"""
+        extension = self.get_extension()
+        
+        # Images
+        if extension in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp']:
+            return 'image'
+        
+        # Videos
+        elif extension in ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv']:
+            return 'video'
+        
+        # Audio
+        elif extension in ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma']:
+            return 'audio'
+        
+        # Documents
+        elif extension in ['pdf']:
+            return 'pdf'
+        elif extension in ['doc', 'docx']:
+            return 'word'
+        elif extension in ['xls', 'xlsx']:
+            return 'excel'
+        elif extension in ['ppt', 'pptx']:
+            return 'powerpoint'
+        
+        # Text
+        elif extension in ['txt', 'md', 'py', 'js', 'html', 'css', 'scss', 'json', 'xml', 'csv']:
+            return 'text'
+        
+        # Archives
+        elif extension in ['zip', 'rar', 'tar', 'gz', '7z']:
+            return 'archive'
+        
+        # Default
+        else:
+            return 'other'
+    
     def save(self, *args, **kwargs):
-        if not self.size:
+        # Auto-populate name from filename if not provided
+        if not self.name and self.file:
+            self.name = self.file.name.split('/')[-1]
+        
+        # Set file size
+        if not self.size and self.file:
             self.size = self.file.size
+        
+        # Set file type based on extension
         if not self.file_type:
             self.file_type = self.get_extension()
+        
         super().save(*args, **kwargs)
 
 class Trash(models.Model):

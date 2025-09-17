@@ -70,30 +70,35 @@
                         </div>
                     {% endfor %}
                     
+                    <!-- In the file display section -->
                     {% for file in files %}
                         <div class="col-md-3 mb-3">
                             <div class="file-item" onclick="window.location.href='{% url 'file' file.id %}'">
                                 <div class="card h-100">
                                     <div class="card-body text-center">
-                                        {% if file.file_type in 'jpg,jpeg,png,gif,bmp' %}
-                                            <i class="bi bi-file-earmark-image" style="font-size: 3rem; color: #0d6efd;"></i>
-                                        {% elif file.file_type in 'pdf' %}
-                                            <i class="bi bi-file-earmark-pdf" style="font-size: 3rem; color: #dc3545;"></i>
-                                        {% elif file.file_type in 'doc,docx' %}
-                                            <i class="bi bi-file-earmark-word" style="font-size: 3rem; color: #0d6efd;"></i>
-                                        {% elif file.file_type in 'xls,xlsx' %}
-                                            <i class="bi bi-file-earmark-excel" style="font-size: 3rem; color: #198754;"></i>
-                                        {% elif file.file_type in 'ppt,pptx' %}
-                                            <i class="bi bi-file-earmark-ppt" style="font-size: 3rem; color: #fd7e14;"></i>
-                                        {% elif file.file_type in 'mp4,avi,mov,wmv,flv' %}
-                                            <i class="bi bi-file-earmark-play" style="font-size: 3rem; color: #dc3545;"></i>
-                                        {% elif file.file_type in 'mp3,wav,flac' %}
-                                            <i class="bi bi-file-earmark-music" style="font-size: 3rem; color: #6f42c1;"></i>
-                                        {% elif file.file_type in 'zip,rar,tar,gz' %}
-                                            <i class="bi bi-file-earmark-zip" style="font-size: 3rem; color: #6c757d;"></i>
-                                        {% else %}
-                                            <i class="bi bi-file-earmark" style="font-size: 3rem; color: #6c757d;"></i>
-                                        {% endif %}
+                                        {% with file.get_file_category as category %}
+                                            {% if category == 'image' %}
+                                                <i class="bi bi-file-earmark-image" style="font-size: 3rem; color: #0d6efd;"></i>
+                                            {% elif category == 'video' %}
+                                                <i class="bi bi-file-earmark-play" style="font-size: 3rem; color: #dc3545;"></i>
+                                            {% elif category == 'audio' %}
+                                                <i class="bi bi-file-earmark-music" style="font-size: 3rem; color: #6f42c1;"></i>
+                                            {% elif category == 'pdf' %}
+                                                <i class="bi bi-file-earmark-pdf" style="font-size: 3rem; color: #dc3545;"></i>
+                                            {% elif category == 'word' %}
+                                                <i class="bi bi-file-earmark-word" style="font-size: 3rem; color: #0d6efd;"></i>
+                                            {% elif category == 'excel' %}
+                                                <i class="bi bi-file-earmark-excel" style="font-size: 3rem; color: #198754;"></i>
+                                            {% elif category == 'powerpoint' %}
+                                                <i class="bi bi-file-earmark-ppt" style="font-size: 3rem; color: #fd7e14;"></i>
+                                            {% elif category == 'text' %}
+                                                <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: #6c757d;"></i>
+                                            {% elif category == 'archive' %}
+                                                <i class="bi bi-file-earmark-zip" style="font-size: 3rem; color: #6c757d;"></i>
+                                            {% else %}
+                                                <i class="bi bi-file-earmark" style="font-size: 3rem; color: #6c757d;"></i>
+                                            {% endif %}
+                                        {% endwith %}
                                         <h6 class="mt-2">{{ file.name }}</h6>
                                         <small class="text-muted">{{ file.size|filesizeformat }}</small>
                                         {% if file.is_public %}

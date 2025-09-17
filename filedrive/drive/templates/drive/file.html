@@ -67,38 +67,74 @@
                 </div>
                 
                 <div class="file-preview">
-                    {% if extension in 'jpg,jpeg,png,gif,bmp' %}
-                        <img src="{{ file.file.url }}" class="img-fluid" alt="{{ file.name }}">
-                    {% elif extension == 'pdf' %}
-                        <div class="ratio ratio-16x9">
-                            <iframe src="{{ file.file.url }}" class="embed-responsive-item"></iframe>
-                        </div>
-                    {% elif extension in 'txt,md,py,js,html,css,scss,json,xml' %}
-                        <div class="border rounded p-3 bg-light">
-                            <pre class="mb-0"><code>{% with file.file.open as f %}{{ f.read|force_escape }}{% endwith %}</code></pre>
-                        </div>
-                    {% elif extension in 'mp4,webm,ogg' %}
-                        <div class="ratio ratio-16x9">
-                            <video controls class="embed-responsive-item">
-                                <source src="{{ file.file.url }}" type="video/{{ extension }}">
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
-                    {% elif extension in 'mp3,wav' %}
-                        <audio controls class="w-100">
-                            <source src="{{ file.file.url }}" type="audio/{{ extension }}">
-                            Your browser does not support the audio element.
-                        </audio>
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="bi bi-file-earmark" style="font-size: 4rem; color: #6c757d;"></i>
-                            <h5 class="mt-3">Preview not available</h5>
-                            <p class="text-muted">This file type cannot be previewed. Please download it to view.</p>
-                            <a href="{% url 'download_file' file.id %}" class="btn btn-primary">
-                                <i class="bi bi-download"></i> Download File
-                            </a>
-                        </div>
-                    {% endif %}
+                    {% with file.get_file_category as category %}
+                        {% if category == 'image' %}
+                            <div class="text-center">
+                                <img src="{{ file.file.url }}" class="img-fluid rounded shadow" alt="{{ file.name }}">
+                            </div>
+                        {% elif category == 'video' %}
+                            <div class="ratio ratio-16x9">
+                                <video controls class="embed-responsive-item">
+                                    <source src="{{ file.file.url }}" type="video/{{ file.file_type }}">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        {% elif category == 'audio' %}
+                            <div class="audio-player p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-file-earmark-music" style="font-size: 3rem; color: #6f42c1;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h5>{{ file.name }}</h5>
+                                        <audio controls class="w-100">
+                                            <source src="{{ file.file.url }}" type="audio/{{ file.file_type }}">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif category == 'pdf' %}
+                            <div class="pdf-viewer">
+                                <div class="ratio ratio-1x1">
+                                    <iframe src="{{ file.file.url }}" class="embed-responsive-item"></iframe>
+                                </div>
+                            </div>
+                        {% elif category == 'text' %}
+                            <div class="text-viewer">
+                                <div class="border rounded p-3 bg-light" style="max-height: 500px; overflow-y: auto;">
+                                    <pre class="mb-0"><code>{% with file.file.open as f %}{{ f.read|force_escape }}{% endwith %}</code></pre>
+                                </div>
+                            </div>
+                        {% elif category in 'word,excel,powerpoint' %}
+                            <div class="document-viewer text-center py-5">
+                                <i class="bi bi-file-earmark-{% if category == 'word' %}word{% elif category == 'excel' %}excel{% else %}ppt{% endif %}" style="font-size: 4rem; color: #6c757d;"></i>
+                                <h5 class="mt-3">{{ file.name }}</h5>
+                                <p class="text-muted">This document cannot be previewed. Please download it to view.</p>
+                                <a href="{% url 'download_file' file.id %}" class="btn btn-primary">
+                                    <i class="bi bi-download"></i> Download Document
+                                </a>
+                            </div>
+                        {% elif category == 'archive' %}
+                            <div class="archive-viewer text-center py-5">
+                                <i class="bi bi-file-earmark-zip" style="font-size: 4rem; color: #6c757d;"></i>
+                                <h5 class="mt-3">{{ file.name }}</h5>
+                                <p class="text-muted">This archive cannot be previewed. Please download it to extract its contents.</p>
+                                <a href="{% url 'download_file' file.id %}" class="btn btn-primary">
+                                    <i class="bi bi-download"></i> Download Archive
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="unknown-viewer text-center py-5">
+                                <i class="bi bi-file-earmark" style="font-size: 4rem; color: #6c757d;"></i>
+                                <h5 class="mt-3">Preview not available</h5>
+                                <p class="text-muted">This file type cannot be previewed. Please download it to view.</p>
+                                <a href="{% url 'download_file' file.id %}" class="btn btn-primary">
+                                    <i class="bi bi-download"></i> Download File
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
                 </div>
             </div>
         </div>
