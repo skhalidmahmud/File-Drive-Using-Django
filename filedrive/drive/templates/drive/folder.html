@@ -1,0 +1,128 @@
+{% extends 'drive/base.html' %}
+
+{% block title %}{{ folder.name }} - FileDrive{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                {% for ancestor in folder.get_ancestors %}
+                    <li class="breadcrumb-item"><a href="{% url 'folder' ancestor.id %}">{{ ancestor.name }}</a></li>
+                {% endfor %}
+                <li class="breadcrumb-item active">{{ folder.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>{{ folder.name }}</h5>
+                <div>
+                    <a href="{% url 'create_folder_in_parent' folder.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-folder-plus"></i> New Folder
+                    </a>
+                    <a href="{% url 'upload_file_to_folder' folder.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-file-earmark-plus"></i> Upload File
+                    </a>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'toggle_public' 'folder' folder.id %}">
+                                    <i class="bi bi-{% if folder.is_public %}unlock{% else %}lock{% endif %}"></i>
+                                    Make {% if folder.is_public %}Private{% else %}Public{% endif %}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'delete_item' 'folder' folder.id %}">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for folder in subfolders %}
+                        <div class="col-md-3 mb-3">
+                            <div class="folder-item" onclick="window.location.href='{% url 'folder' folder.id %}'">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-folder-fill" style="font-size: 3rem; color: #ffc107;"></i>
+                                        <h6 class="mt-2">{{ folder.name }}</h6>
+                                        <small class="text-muted">{{ folder.modified_at|date:"M d, Y" }}</small>
+                                        {% if folder.is_public %}
+                                            <div class="mt-1">
+                                                <i class="bi bi-globe" title="Public"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    {% for file in files %}
+                        <div class="col-md-3 mb-3">
+                            <div class="file-item" onclick="window.location.href='{% url 'file' file.id %}'">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        {% if file.file_type in 'jpg,jpeg,png,gif,bmp' %}
+                                            <i class="bi bi-file-earmark-image" style="font-size: 3rem; color: #0d6efd;"></i>
+                                        {% elif file.file_type in 'pdf' %}
+                                            <i class="bi bi-file-earmark-pdf" style="font-size: 3rem; color: #dc3545;"></i>
+                                        {% elif file.file_type in 'doc,docx' %}
+                                            <i class="bi bi-file-earmark-word" style="font-size: 3rem; color: #0d6efd;"></i>
+                                        {% elif file.file_type in 'xls,xlsx' %}
+                                            <i class="bi bi-file-earmark-excel" style="font-size: 3rem; color: #198754;"></i>
+                                        {% elif file.file_type in 'ppt,pptx' %}
+                                            <i class="bi bi-file-earmark-ppt" style="font-size: 3rem; color: #fd7e14;"></i>
+                                        {% elif file.file_type in 'mp4,avi,mov,wmv,flv' %}
+                                            <i class="bi bi-file-earmark-play" style="font-size: 3rem; color: #dc3545;"></i>
+                                        {% elif file.file_type in 'mp3,wav,flac' %}
+                                            <i class="bi bi-file-earmark-music" style="font-size: 3rem; color: #6f42c1;"></i>
+                                        {% elif file.file_type in 'zip,rar,tar,gz' %}
+                                            <i class="bi bi-file-earmark-zip" style="font-size: 3rem; color: #6c757d;"></i>
+                                        {% else %}
+                                            <i class="bi bi-file-earmark" style="font-size: 3rem; color: #6c757d;"></i>
+                                        {% endif %}
+                                        <h6 class="mt-2">{{ file.name }}</h6>
+                                        <small class="text-muted">{{ file.size|filesizeformat }}</small>
+                                        {% if file.is_public %}
+                                            <div class="mt-1">
+                                                <i class="bi bi-globe" title="Public"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                {% if not subfolders and not files %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-folder2-open" style="font-size: 4rem; color: #6c757d;"></i>
+                        <h5 class="mt-3">This folder is empty</h5>
+                        <p class="text-muted">Upload files or create folders to get started</p>
+                        <a href="{% url 'upload_file_to_folder' folder.id %}" class="btn btn-primary me-2">
+                            <i class="bi bi-file-earmark-plus"></i> Upload File
+                        </a>
+                        <a href="{% url 'create_folder_in_parent' folder.id %}" class="btn btn-outline-primary">
+                            <i class="bi bi-folder-plus"></i> New Folder
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

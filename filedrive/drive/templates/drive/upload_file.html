@@ -1,0 +1,108 @@
+{% extends 'drive/base.html' %}
+
+{% block title %}Upload File - FileDrive{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Upload File</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.file.id_for_label }}" class="form-label">Select File</label>
+                        {{ form.file }}
+                        {% if form.file.errors %}
+                            <div class="text-danger">
+                                {{ form.file.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.is_public }}
+                            <label class="form-check-label" for="{{ form.is_public.id_for_label }}">
+                                Make this file public
+                            </label>
+                        </div>
+                    </div>
+                    
+                    {% if folder %}
+                        <div class="mb-3">
+                            <label class="form-label">Upload to</label>
+                            <div class="form-control-plaintext">
+                                {{ folder.get_path }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% if folder %}{% url 'folder' folder.id %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Upload File</button>
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <h5>Drag & Drop Upload</h5>
+                    <div id="drop-zone" class="border rounded p-5 text-center bg-light">
+                        <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: #6c757d;"></i>
+                        <p class="mt-2">Drag and drop files here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('{{ form.file.id_for_label }}');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.classList.add('bg-primary', 'text-white');
+            dropZone.classList.remove('bg-light');
+        }
+        
+        function unhighlight() {
+            dropZone.classList.remove('bg-primary', 'text-white');
+            dropZone.classList.add('bg-light');
+        }
+        
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length) {
+                fileInput.files = files;
+                document.querySelector('form').submit();
+            }
+        }
+    });
+</script>
+{% endblock %}

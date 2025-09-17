@@ -1,0 +1,107 @@
+{% extends 'drive/base.html' %}
+
+{% block title %}{{ file.name }} - FileDrive{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                {% if file.folder %}
+                    {% for ancestor in file.folder.get_ancestors %}
+                        <li class="breadcrumb-item"><a href="{% url 'folder' ancestor.id %}">{{ ancestor.name }}</a></li>
+                    {% endfor %}
+                    <li class="breadcrumb-item"><a href="{% url 'folder' file.folder.id %}">{{ file.folder.name }}</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active">{{ file.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>{{ file.name }}</h5>
+                <div>
+                    <a href="{% url 'download_file' file.id %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'toggle_public' 'file' file.id %}">
+                                    <i class="bi bi-{% if file.is_public %}unlock{% else %}lock{% endif %}"></i>
+                                    Make {% if file.is_public %}Private{% else %}Public{% endif %}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'delete_item' 'file' file.id %}">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Size:</strong> {{ file.size|filesizeformat }}</p>
+                        <p><strong>Type:</strong> {{ file.file_type|upper }}</p>
+                        <p><strong>Created:</strong> {{ file.created_at|date:"F d, Y, g:i a" }}</p>
+                        <p><strong>Modified:</strong> {{ file.modified_at|date:"F d, Y, g:i a" }}</p>
+                        <p><strong>Visibility:</strong> 
+                            {% if file.is_public %}
+                                <span class="badge bg-success">Public</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Private</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="file-preview">
+                    {% if extension in 'jpg,jpeg,png,gif,bmp' %}
+                        <img src="{{ file.file.url }}" class="img-fluid" alt="{{ file.name }}">
+                    {% elif extension == 'pdf' %}
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ file.file.url }}" class="embed-responsive-item"></iframe>
+                        </div>
+                    {% elif extension in 'txt,md,py,js,html,css,scss,json,xml' %}
+                        <div class="border rounded p-3 bg-light">
+                            <pre class="mb-0"><code>{% with file.file.open as f %}{{ f.read|force_escape }}{% endwith %}</code></pre>
+                        </div>
+                    {% elif extension in 'mp4,webm,ogg' %}
+                        <div class="ratio ratio-16x9">
+                            <video controls class="embed-responsive-item">
+                                <source src="{{ file.file.url }}" type="video/{{ extension }}">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    {% elif extension in 'mp3,wav' %}
+                        <audio controls class="w-100">
+                            <source src="{{ file.file.url }}" type="audio/{{ extension }}">
+                            Your browser does not support the audio element.
+                        </audio>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-file-earmark" style="font-size: 4rem; color: #6c757d;"></i>
+                            <h5 class="mt-3">Preview not available</h5>
+                            <p class="text-muted">This file type cannot be previewed. Please download it to view.</p>
+                            <a href="{% url 'download_file' file.id %}" class="btn btn-primary">
+                                <i class="bi bi-download"></i> Download File
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

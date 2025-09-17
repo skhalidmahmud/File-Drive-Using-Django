@@ -1,0 +1,86 @@
+{% extends 'drive/base.html' %}
+
+{% block title %}Trash - FileDrive{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Trash</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-danger" id="empty-trash-btn">
+                        <i class="bi bi-trash"></i> Empty Trash
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if trash_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Deleted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in trash_items %}
+                                    <tr>
+                                        <td>
+                                            {% if item.file %}
+                                                {{ item.file.name }}
+                                            {% else %}
+                                                {{ item.folder.name }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.file %}
+                                                <span class="badge bg-info">File</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Folder</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.deleted_at|date:"F d, Y, g:i a" }}</td>
+                                        <td>
+                                            <a href="{% url 'restore_from_trash' item.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                            </a>
+                                            <a href="{% url 'delete_from_trash' item.id %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Delete Forever
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-trash" style="font-size: 4rem; color: #6c757d;"></i>
+                        <h5 class="mt-3">Your trash is empty</h5>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="empty-trash-form" method="post" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="empty_trash" value="1">
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('empty-trash-btn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to empty the trash? All items will be permanently deleted.')) {
+            document.getElementById('empty-trash-form').submit();
+        }
+    });
+</script>
+{% endblock %}

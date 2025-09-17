@@ -1,0 +1,135 @@
+{% extends 'drive/base.html' %}
+
+{% block title %}Search - FileDrive{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Search Results for "{{ query }}"</h5>
+            </div>
+            <div class="card-body">
+                {% if folders or files %}
+                    <ul class="nav nav-tabs" id="searchTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="folders-tab" data-bs-toggle="tab" data-bs-target="#folders" type="button" role="tab">
+                                Folders ({{ folders|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button" role="tab">
+                                Files ({{ files|length }})
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content mt-3" id="searchTabsContent">
+                        <div class="tab-pane fade show active" id="folders" role="tabpanel">
+                            {% if folders %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Path</th>
+                                                <th>Modified</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for folder in folders %}
+                                                <tr>
+                                                    <td>
+                                                        <i class="bi bi-folder-fill text-warning"></i> {{ folder.name }}
+                                                    </td>
+                                                    <td>{{ folder.get_path }}</td>
+                                                    <td>{{ folder.modified_at|date:"M d, Y, g:i a" }}</td>
+                                                    <td>
+                                                        <a href="{% url 'folder' folder.id %}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-folder2-open"></i> Open
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-3">
+                                    <p class="text-muted">No folders found matching your search.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="tab-pane fade" id="files" role="tabpanel">
+                            {% if files %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Folder</th>
+                                                <th>Size</th>
+                                                <th>Modified</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for file in files %}
+                                                <tr>
+                                                    <td>
+                                                        {% if file.file_type in 'jpg,jpeg,png,gif,bmp' %}
+                                                            <i class="bi bi-file-earmark-image text-primary"></i>
+                                                        {% elif file.file_type in 'pdf' %}
+                                                            <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                                        {% elif file.file_type in 'doc,docx' %}
+                                                            <i class="bi bi-file-earmark-word text-primary"></i>
+                                                        {% elif file.file_type in 'xls,xlsx' %}
+                                                            <i class="bi bi-file-earmark-excel text-success"></i>
+                                                        {% elif file.file_type in 'ppt,pptx' %}
+                                                            <i class="bi bi-file-earmark-ppt text-warning"></i>
+                                                        {% elif file.file_type in 'mp4,avi,mov,wmv,flv' %}
+                                                            <i class="bi bi-file-earmark-play text-danger"></i>
+                                                        {% elif file.file_type in 'mp3,wav,flac' %}
+                                                            <i class="bi bi-file-earmark-music text-info"></i>
+                                                        {% elif file.file_type in 'zip,rar,tar,gz' %}
+                                                            <i class="bi bi-file-earmark-zip text-secondary"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-file-earmark text-secondary"></i>
+                                                        {% endif %}
+                                                        {{ file.name }}
+                                                    </td>
+                                                    <td>{{ file.folder.get_path|default:"Root" }}</td>
+                                                    <td>{{ file.size|filesizeformat }}</td>
+                                                    <td>{{ file.modified_at|date:"M d, Y, g:i a" }}</td>
+                                                    <td>
+                                                        <a href="{% url 'file' file.id %}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </a>
+                                                        <a href="{% url 'download_file' file.id %}" class="btn btn-sm btn-outline-success">
+                                                            <i class="bi bi-download"></i> Download
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-3">
+                                    <p class="text-muted">No files found matching your search.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-search" style="font-size: 4rem; color: #6c757d;"></i>
+                        <h5 class="mt-3">No results found</h5>
+                        <p class="text-muted">Try a different search term</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
