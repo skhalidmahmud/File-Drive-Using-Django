@@ -225,16 +225,16 @@ filedrive/
 
 **Khalid Mahmud**
 
-- GitHub: [https://github.com/skhalidmahmud/](https://github.com/skhalidmahmud/)
-- LinkedIn: [https://www.linkedin.com/in/skhalidmahmud/](https://www.linkedin.com/in/skhalidmahmud/)
-- Portfolio: [http://khalid.top/](http://khalid.top/)
+- GitHub: [github.com/skhalidmahmud](https://github.com/skhalidmahmud/)
+- LinkedIn: [www.linkedin.com/in/skhalidmahmud](https://www.linkedin.com/in/skhalidmahmud/)
+- Portfolio: [khalid.top](https://khalid.top/)
 
 ## Working Organization
 
 **Thinkori**
 
-- Website: [https://thinkori.com/](https://thinkori.com/)
-- GitHub: [https://github.com/thinkori](https://github.com/thinkori)
+- Website: [thinkori.com](https://thinkori.com/)
+- GitHub: [github.com/thinkori](https://github.com/thinkori)
 
 ## Contributing
 
